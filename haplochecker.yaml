@@ -1,10 +1,8 @@
 name: Haplochecker
 description: Check NGS data for contamination based on mitochondrial haplogroup profiles
 version: 1.0
-website: 
 
 workflow:
-
 
   steps:
 
