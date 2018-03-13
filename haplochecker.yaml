@@ -10,6 +10,7 @@ workflow:
 
 #if( $inType == "bam")
     - name: Calculate Variants
+      type: java
       jar: mutation-server-1.0.1.jar
       params: analyse-local --input $input --reference $archive --level $level --outputRaw ${raw}.txt --outputVar ${variants}.txt --baq $baq --indel $indel --baseQ $baseQuality --mapQ $mapQuality --alignQ $alignQuality
 #end
@@ -21,14 +22,17 @@ workflow:
 
 
     - name: Create HaploGrep Inputfile
+      type: java
       jar: mitolib-0.1.0.jar
       params: splitter --in ${variants}.txt --out ${hsd}.hsd --vaf $level
 
     - name: Haplogroup Contamination Check
+      type: java
       jar: haplogrep-2.1.1.jar
       params: --format hsd --in ${hsd}.hsd --out ${hsdExt}.txt --phylotree 17
 
     - name: Check Haplogroups
+      type: java
       jar: mitolib-0.1.0.jar
       params: contChecker --inHG2 ${hsdExt}.txt --inVar ${variants}.txt --vaf $level --out ${contaminated}.txt
 
@@ -106,21 +110,21 @@ workflow:
       description: Raw file
       type: local-file
       removeHeader: false
-      download: true
+      download: false
       temp: false
       
     - id: variants
       description: Variants file
       type: local-file
       removeHeader: false
-      download: true
+      download: false
       temp: false
 
     - id: hsd
       description: HaploGrep2 input file
       type: local-file
       removeHeader: false
-      download: true
+      download: false
       temp: false
 
     - id: hsdExt
