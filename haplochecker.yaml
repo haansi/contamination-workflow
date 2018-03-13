@@ -3,23 +3,14 @@ description: Check NGS data for contamination based on mitochondrial haplogroup 
 version: 1.0
 website: 
 
-cluster:
-
-  image: us-east-1/ami-da0cf8b3
-  type: m1.large,m1.xlarge
-  ports: 80,50030,50070
-  creationOnly: false
-  installMapred: true
-  initScript: install.sh
-  service: hadoop
- 
-mapred:
+workflow:
 
 
   steps:
+
 #if( $inType == "bam")
     - name: Calculate Variants
-      jar: cnv-mutation-server-1.0.jar
+      jar: mutation-server-1.0.1.jar
       params: analyse-local --input $input --reference $archive --level $level --outputRaw ${raw}.txt --outputVar ${variants}.txt --baq $baq --indel $indel --baseQ $baseQuality --mapQ $mapQuality --alignQ $alignQuality
 #end
  
@@ -34,7 +25,7 @@ mapred:
       params: splitter --in ${variants}.txt --out ${hsd}.hsd --vaf $level
 
     - name: Haplogroup Contamination Check
-      jar: HaplogrepCMD2.jar
+      jar: haplogrep-2.1.1.jar
       params: --format hsd --in ${hsd}.hsd --out ${hsdExt}.txt --phylotree 17
 
     - name: Check Haplogroups
@@ -44,7 +35,7 @@ mapred:
   inputs:
 
     - id: input
-      description: Input Files (SAM/BAM/CRAM)
+      description: Input Files (SAM/BAM)
       type: local-folder
     - id: inType
       description: Input Format
@@ -92,16 +83,16 @@ mapred:
       values:
         true: true
         false: false
-      value: false
+      value: true
 
     - id: indel
-      description: Indel calling
+      description: del calling
       type: checkbox
-      visible: false
+      visible: true
       values:
         true: true
         false: false
-      value: false
+      value: true
                  
     - id: submissionSource
       description: submission source
