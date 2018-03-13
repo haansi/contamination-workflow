@@ -1,0 +1,147 @@
+name: Haplochecker
+description: Check NGS data for contamination based on mitochondrial haplogroup profiles
+version: 1.0
+website: 
+
+cluster:
+
+  image: us-east-1/ami-da0cf8b3
+  type: m1.large,m1.xlarge
+  ports: 80,50030,50070
+  creationOnly: false
+  installMapred: true
+  initScript: install.sh
+  service: hadoop
+ 
+mapred:
+
+
+  steps:
+#if( $inType == "bam")
+    - name: Calculate Variants
+      jar: cnv-mutation-server-1.0.jar
+      params: analyse-local --input $input --reference $archive --level $level --outputRaw ${raw}.txt --outputVar ${variants}.txt --baq $baq --indel $indel --baseQ $baseQuality --mapQ $mapQuality --alignQ $alignQuality
+#end
+ 
+
+#if( $inType == "txt")
+#set( $variants = $input )
+#end
+
+
+    - name: Create HaploGrep Inputfile
+      jar: mitolib-0.1.0.jar
+      params: splitter --in ${variants}.txt --out ${hsd}.hsd --vaf $level
+
+    - name: Haplogroup Contamination Check
+      jar: HaplogrepCMD2.jar
+      params: --format hsd --in ${hsd}.hsd --out ${hsdExt}.txt --phylotree 17
+
+    - name: Check Haplogroups
+      jar: mitolib-0.1.0.jar
+      params: contChecker --inHG2 ${hsdExt}.txt --inVar ${variants}.txt --vaf $level --out ${contaminated}.txt
+
+  inputs:
+
+    - id: input
+      description: Input Files (SAM/BAM/CRAM)
+      type: local-folder
+    - id: inType
+      description: Input Format
+      type: list
+      required: true
+      values:
+        bam: SAM/BAM
+        txt: Variants File
+      
+
+    - id: archive
+      description: Reference FASTA
+      type: text
+      visible: false
+      value: rCRS.fasta
+      
+    - id: level
+      description: Detection Level in %
+      type: number
+      value: 0.01
+      visible: true
+
+    - id: mapQuality
+      description: Min. Mapping quality
+      type: number
+      value: 20
+      visible: false
+
+    - id: alignQuality
+      description: Min Alignment quality
+      visible: false
+      type: number
+      value: 30     
+      
+    - id: baseQuality
+      description: Min. Base quality
+      type: number
+      value: 20
+      visible: false
+
+    - id: baq
+      description: Calculate BAQ
+      type: checkbox
+      visible: false
+      values:
+        true: true
+        false: false
+      value: false
+
+    - id: indel
+      description: Indel calling
+      type: checkbox
+      visible: false
+      values:
+        true: true
+        false: false
+      value: false
+                 
+    - id: submissionSource
+      description: submission source
+      type: text
+      value: web
+      visible: false
+
+  outputs:
+
+    - id: raw
+      description: Raw file
+      type: local-file
+      removeHeader: false
+      download: true
+      temp: false
+      
+    - id: variants
+      description: Variants file
+      type: local-file
+      removeHeader: false
+      download: true
+      temp: false
+
+    - id: hsd
+      description: HaploGrep2 input file
+      type: local-file
+      removeHeader: false
+      download: true
+      temp: false
+
+    - id: hsdExt
+      description: HaploGrep2 output file
+      type: local-file
+      removeHeader: false
+      download: false
+      temp: false
+
+    - id: contaminated
+      description: Contamination Detection
+      type: local-file
+      removeHeader: false
+      download: true
+      temp: false  
