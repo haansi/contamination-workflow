@@ -18,7 +18,6 @@ workflow:
 #set( $variants = $input )
 #end
 
-
     - name: Create HaploGrep Inputfile
       type: java
       jar: mitolib-0.1.0.jar
