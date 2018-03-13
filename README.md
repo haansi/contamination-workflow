@@ -18,12 +18,15 @@ curl -s install.cloudgene.io | bash
 ./cloudgene gh haansi/contamination-workflow@latest
 ```
 
-3) Start the local web service
+3a) Start the local web service and run
 ```
 ./cloudgene server
 ```
+Open your web browser and enter http://localhost:8082. Use `admin` and `admin1978` to login.
 
-4) Open your web browser and enter http://localhost:8082. Use `admin` and `admin1978` to login.
-
+3b) Run on the command line
+```
+./cloudgene run cont --input /home/seb/Desktop/s4.bam --output /home/seb/Desktop/seb --inType bam
+```
 
 
