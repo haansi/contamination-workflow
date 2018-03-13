@@ -26,7 +26,7 @@ Open your web browser and enter http://localhost:8082. Use `admin` and `admin197
 
 3b) Run on the command line
 ```
-./cloudgene run cont --input /home/seb/Desktop/s4.bam --output /home/seb/Desktop/seb --inType bam
+./cloudgene run haansi-contamination-workflow --input <bam-folder> --inType bam --output <results-folder>
 ```
 
 
