@@ -1,0 +1,83 @@
+---
+title: "Contamination Report"
+output: html_document
+---
+
+## Contamination Overview Plots
+
+```{r echo=FALSE, warning=FALSE, message=FALSE, fig.width=12, fig.height=10}
+list.of.packages <- c("ggplot2", "knitr", "stringr", "readr", "data.table")
+new.packages <- list.of.packages[!(list.of.packages %in% installed.packages()[,"Package"])]
+if(length(new.packages)) install.packages(new.packages)
+suppressPackageStartupMessages(library(ggplot2))
+suppressPackageStartupMessages(library(knitr))
+suppressPackageStartupMessages(library(stringr))
+suppressPackageStartupMessages(library(readr))
+suppressPackageStartupMessages(library(data.table))
+
+args <- commandArgs(trailingOnly = TRUE)
+
+args <- commandArgs(trailingOnly = TRUE)
+contam = read.table(args[1], header = TRUE, sep="\t");
+meta<-data.frame(with(contam, table(Contamination)))
+```
+---
+
+## Graphical overview 
+
+```{r echo=FALSE, fig.width=5.5, fig.height=4, result='asis'}
+
+print(ggplot(data=meta, aes(x=Contamination, y=Freq, fill=Contamination)) + geom_bar(stat="identity") + xlab("Contamination Status") + ylab("Samples")  )
+
+```
+---
+
+## Verdict 
+
+
+This table shows the detected contaminated samples. 
+
+```{r echo=FALSE, results='asis'}
+if(nrow(contam)>0){
+	
+	kable(contam[,c(1,2,3,4,5,6,7,8,9,10)], "html", table.attr = "id=\"contam_table\" class=\"table table-bordered table-striped display responsive nowrap\"",caption = "TYPE: 1 = reliable heteroplasmy; 2 = Heteroplasmy in low complexity region (LCR); 3 = Major/Minor component are swapped for forward and reverse strand") 
+
+} else{
+
+	cat("<div class='alert alert-neutral'>No entries found!</div>")
+	
+}
+```
+<script type="text/javascript">
+  $(document).ready(function() {
+  	$('#contam_table').DataTable({
+  	
+       responsive: {
+            details: {
+                display: $.fn.dataTable.Responsive.display.modal( {
+                    header: function ( row ) {
+                        var data = row.data();
+                        return 'Details for '+data[0];
+                    }
+                } ),
+                renderer: function ( api, rowIdx, columns ) {
+                    var data = $.map( columns, function ( col, i ) {
+                        return '<b>' + col.title+':'+'</b><br>'+
+                                col.data+'<br><hr>';
+                    } ).join('');
+ 
+                    return $('<div/>').append( data );
+                }
+            }
+       },
+         
+       "fnRowCallback": function( nRow, aData, iDisplayIndex, iDisplayIndexFull ) {
+          if ( aData[6] != "1" ){
+            $('td', nRow).css('background-color', '#f2dede');
+          }
+       }
+  	
+  	});
+	} );
+</script>
+

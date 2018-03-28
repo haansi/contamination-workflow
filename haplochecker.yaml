@@ -1,6 +1,6 @@
-name: Haplochecker
+name: Haplochecker 1.0
 description: Check NGS data for contamination based on mitochondrial haplogroup profiles
-version: 1.0
+version: 1.0.1
 
 workflow:
 
@@ -12,7 +12,7 @@ workflow:
       jar: mutation-server-1.0.1.jar
       params: analyse-local --input $input --reference $archive --level $level --outputRaw ${raw}.txt --outputVar ${variants}.txt --baq $baq --indel $indel --baseQ $baseQuality --mapQ $mapQuality --alignQ $alignQuality
 #end
- 
+
 
 #if( $inType == "txt")
 #set( $variants = $input )
@@ -23,15 +23,30 @@ workflow:
       jar: mitolib-0.1.0.jar
       params: splitter --in ${variants}.txt --out ${hsd}.hsd --vaf $level
 
-    - name: Haplogroup Contamination Check
+    - name: Haplogroup Contamination Check - HaploGrep2
       type: java
-      jar: haplogrep-2.1.1.jar
-      params: --format hsd --in ${hsd}.hsd --out ${hsdExt}.txt --phylotree 17
+      jar: toolbox-1.0.1.jar
+      params: haplogrep --format hsd --in ${hsd}.hsd --out ${hsdExt}.txt --ext 1 --phylotree 17 --metric 1
 
-    - name: Check Haplogroups
+    - name: Haplogroup Contamination Check - Hamming
+      type: java
+      jar: toolbox-1.0.1.jar
+      params: haplogrep --format hsd --in ${hsd}.hsd --out ${hsdExtHamming}.hamming.txt --ext 1 --phylotree 17  --metric 2
+
+    - name: Check Haplogroups - HaploGrep2
       type: java
       jar: mitolib-0.1.0.jar
       params: contChecker --inHG2 ${hsdExt}.txt --inVar ${variants}.txt --vaf $level --out ${contaminated}.txt
+
+    - name: Check Haplogroups - Hamming
+      type: java
+      jar: mitolib-0.1.0.jar
+      params: contChecker --inHG2 ${hsdExtHamming}.hamming.txt --inVar ${variants}.txt --vaf $level --out ${contaminatedHamming}.hamming.txt
+
+    - name: Report Creation
+      rmd: report.Rmd
+      output: ${report}.html
+      params: ${contaminated}.txt ${contaminatedHamming}.hamming.txt
 
   inputs:
 
@@ -45,14 +60,14 @@ workflow:
       values:
         bam: SAM/BAM
         txt: Variants File
-      
+
 
     - id: archive
       description: Reference FASTA
       type: text
       visible: false
       value: rCRS.fasta
-      
+
     - id: level
       description: Detection Level in %
       type: number
@@ -69,8 +84,8 @@ workflow:
       description: Min Alignment quality
       visible: false
       type: number
-      value: 30     
-      
+      value: 30
+
     - id: baseQuality
       description: Min. Base quality
       type: number
@@ -94,7 +109,7 @@ workflow:
         true: true
         false: false
       value: true
-                 
+
     - id: submissionSource
       description: submission source
       type: text
@@ -107,25 +122,33 @@ workflow:
       description: Raw file
       type: local-file
       removeHeader: false
-      download: false
+      download: true
       temp: false
-      
+      zip: true
+
     - id: variants
       description: Variants file
       type: local-file
       removeHeader: false
-      download: false
+      download: true
       temp: false
 
     - id: hsd
       description: HaploGrep2 input file
       type: local-file
       removeHeader: false
-      download: false
+      download: true
       temp: false
 
     - id: hsdExt
       description: HaploGrep2 output file
+      type: local-file
+      removeHeader: false
+      download: true
+      temp: false
+
+    - id: hsdExtHamming
+      description: HaploGrep2 Hamming output file
       type: local-file
       removeHeader: false
       download: false
@@ -136,4 +159,16 @@ workflow:
       type: local-file
       removeHeader: false
       download: true
-      temp: false  
+      temp: false
+
+    - id: contaminatedHamming
+      description: Contamination Detection Hamming
+      type: local-file
+      removeHeader: false
+      download: true
+      temp: false
+
+    - id: report
+      description: Contamination Report
+      type: local-file
+      download: true
