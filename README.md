@@ -15,7 +15,7 @@ curl -s install.cloudgene.io | bash
 2) Install the Haplochecker contamination workflow
 
 ```
-./cloudgene gh haansi/haplochecker@latest
+./cloudgene gh mtdna/haplochecker@latest
 ```
 
 3a) Start the local web service and run
