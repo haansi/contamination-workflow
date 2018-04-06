@@ -35,7 +35,7 @@ print(ggplot(data=meta, aes(x=Contamination, y=Freq, fill=Contamination)) + geom
 ## Verdict 
 
 
-This table shows the detected contaminated samples. 
+This interactive table shows the detected contaminated samples. 
 
 ```{r echo=FALSE, results='asis'}
 if(nrow(contam)>0){

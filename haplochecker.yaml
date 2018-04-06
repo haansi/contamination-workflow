@@ -1,6 +1,6 @@
 name: Haplochecker 1.0
 description: Check NGS data for contamination based on mitochondrial haplogroup profiles
-version: 1.0.1
+version: 1.0.2
 
 workflow:
 
@@ -10,38 +10,34 @@ workflow:
     - name: Calculate Variants
       type: java
       jar: mutation-server-1.0.1.jar
-      params: analyse-local --input $input --reference $archive --level $level --outputRaw ${raw}.txt --outputVar ${variants}.txt --baq $baq --indel $indel --baseQ $baseQuality --mapQ $mapQuality --alignQ $alignQuality
-#end
-
-
-#if( $inType == "txt")
-#set( $variants = $input )
+      params: analyse-local --input $input --reference $archive --level $level --outputRaw ${raw}.txt --outputVar $variants --baq $baq --indel $indel --baseQ $baseQuality --mapQ $mapQuality --alignQ $alignQuality
+      #set( $input = $variants )
 #end
 
     - name: Create HaploGrep Inputfile
       type: java
-      jar: mitolib-0.1.0.jar
-      params: splitter --in ${variants}.txt --out ${hsd}.hsd --vaf $level
+      jar: mitolib-0.1.2.jar
+      params: splitter --in $input --out ${hsd} --vaf $level
 
     - name: Haplogroup Contamination Check - HaploGrep2
       type: java
       jar: toolbox-1.0.1.jar
-      params: haplogrep --format hsd --in ${hsd}.hsd --out ${hsdExt}.txt --ext 1 --phylotree 17 --metric 1
+      params: haplogrep --format hsd --in ${hsd} --out ${hsdExt}.txt --ext 1 --phylotree 17 --metric 1
 
     - name: Haplogroup Contamination Check - Hamming
       type: java
       jar: toolbox-1.0.1.jar
-      params: haplogrep --format hsd --in ${hsd}.hsd --out ${hsdExtHamming}.hamming.txt --ext 1 --phylotree 17  --metric 2
+      params: haplogrep --format hsd --in ${hsd} --out ${hsdExtHamming}.hamming.txt --ext 1 --phylotree 17  --metric 2
 
     - name: Check Haplogroups - HaploGrep2
       type: java
-      jar: mitolib-0.1.0.jar
-      params: contChecker --inHG2 ${hsdExt}.txt --inVar ${variants}.txt --vaf $level --out ${contaminated}.txt
+      jar: mitolib-0.1.2.jar
+      params: contChecker --inHG2 ${hsdExt}.txt --inVar ${hsd}.txt --vaf $level --out ${contaminated}.txt
 
     - name: Check Haplogroups - Hamming
       type: java
-      jar: mitolib-0.1.0.jar
-      params: contChecker --inHG2 ${hsdExtHamming}.hamming.txt --inVar ${variants}.txt --vaf $level --out ${contaminatedHamming}.hamming.txt
+      jar: mitolib-0.1.2.jar
+      params: contChecker --inHG2 ${hsdExtHamming}.hamming.txt --inVar ${hsd}.txt --vaf $level --out ${contaminatedHamming}.hamming.txt
 
     - name: Report Creation
       rmd: report.Rmd
@@ -60,7 +56,6 @@ workflow:
       values:
         bam: SAM/BAM
         txt: Variants File
-
 
     - id: archive
       description: Reference FASTA
@@ -118,6 +113,12 @@ workflow:
 
   outputs:
 
+    - id: variants
+      description: Variants file
+      type: local-file
+      removeHeader: false
+      temp: false
+
     - id: raw
       description: Raw file
       type: local-file
@@ -125,13 +126,6 @@ workflow:
       download: true
       temp: false
       zip: true
-
-    - id: variants
-      description: Variants file
-      type: local-file
-      removeHeader: false
-      download: true
-      temp: false
 
     - id: hsd
       description: HaploGrep2 input file
