@@ -24,9 +24,9 @@ curl -s install.cloudgene.io | bash
 ```
 Open your web browser and enter http://localhost:8082. Use `admin` and `admin1978` to login.
 
-3b) Run on the command line
+3b) Run on the command line 
 ```
-./cloudgene run haansi-haplochecker --input <bam-folder> --inType bam --output <results-folder>
+./cloudgene run mtdna-haplochecker --input <bam-folder> --inType bam --output <results-folder>
 ```
 
 
