@@ -1,3 +1,6 @@
+
+# Repository is deprecated. Please go to http://github.com/genepi/haplocheck for the latest contamination check based on mtDNA!
+
 # Haplochecker - Detection of Contamination in mtDNA studies
 
 This repository includes the workflow for detection of contamination based on mixtures of mtDNA haplotypes.
